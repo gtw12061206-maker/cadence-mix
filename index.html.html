@@ -1,0 +1,714 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>케이던스 믹스</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@112,700;112,800&family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one narrow column of stacked "stations" — data in, my rhythm, today's goal, songs. */
+:root {
+  --bg: #F3F4F8; --surface: #FFFFFF; --ink: #131726; --muted: #596078; --line: #DCE0EB;
+  --accent: #2B47DB; --accent-ink: #FFFFFF; --accent-soft: #E4E8FC; --hr: #C9384F;
+  --ok: #24764B; --warn: #9A6410; --grid: #E8EBF2;
+  --f-display: "Archivo", "IBM Plex Sans KR", system-ui, sans-serif;
+  --f-body: "IBM Plex Sans KR", system-ui, -apple-system, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --r: 10px;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #0E1120; --surface: #171B2D; --ink: #E7E9F3; --muted: #9AA1BA; --line: #2A3049;
+  --accent: #8EA1FF; --accent-ink: #0E1120; --accent-soft: #222A55; --hr: #FF7D90;
+  --ok: #5CC690; --warn: #E3B25C; --grid: #232841; color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: #0E1120; --surface: #171B2D; --ink: #E7E9F3; --muted: #9AA1BA; --line: #2A3049;
+  --accent: #8EA1FF; --accent-ink: #0E1120; --accent-soft: #222A55; --hr: #FF7D90;
+  --ok: #5CC690; --warn: #E3B25C; --grid: #232841; color-scheme: dark; }
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html { color-scheme: light; } body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 15px; line-height: 1.6; }
+.wrap { max-width: 920px; margin: 0 auto; padding-block: 28px 64px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: grid; gap: 40px; }
+h1, h2, h3 { margin: 0; text-wrap: balance; }
+p { margin: 0; }
+.num { font-family: var(--f-display); font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }
+.mono { font-family: var(--f-mono); font-variant-numeric: tabular-nums; }
+.muted { color: var(--muted); }
+.small { font-size: 13px; }
+
+header.top { display: grid; gap: 14px; }
+.brand { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.brand h1 { font-family: var(--f-display); font-weight: 800; font-size: clamp(30px, 6vw, 44px); letter-spacing: -0.02em; }
+.brand .tag { font-family: var(--f-mono); font-size: 12px; color: var(--muted); letter-spacing: 0.04em; }
+.lede { max-width: 62ch; color: var(--muted); }
+/* the beat strip: a metronome tick row, the page's one ornament */
+.ticks { display: flex; gap: 6px; align-items: flex-end; height: 18px; }
+.ticks i { width: 3px; background: var(--line); height: 8px; border-radius: 2px; }
+.ticks i:nth-child(4n+1) { height: 18px; background: var(--accent); }
+@media (prefers-reduced-motion: no-preference) { .ticks i:nth-child(4n+1) { animation: pulse 0.364s ease-out infinite alternate; } }
+@keyframes pulse { from { opacity: 1; } to { opacity: .45; } }
+
+section { display: grid; gap: 16px; }
+.sec-head { display: grid; gap: 4px; }
+.sec-head .eyebrow { font-family: var(--f-mono); font-size: 12px; letter-spacing: 0.08em; color: var(--accent); text-transform: uppercase; }
+.sec-head h2 { font-size: 22px; font-weight: 700; }
+
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 18px; min-width: 0; }
+
+.drop { border: 1.5px dashed var(--line); border-radius: var(--r); background: var(--surface); padding: 22px; display: grid; gap: 12px; text-align: left; transition: border-color .15s; }
+.drop.over { border-color: var(--accent); background: var(--accent-soft); }
+.drop .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+.privacy { font-size: 13px; color: var(--muted); }
+
+button, .btn { font: inherit; font-size: 14px; font-weight: 600; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); padding: 9px 14px; cursor: pointer; }
+button:hover { border-color: var(--accent); }
+button.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, label.seg:focus-within { outline: 2px solid var(--accent); outline-offset: 2px; }
+button.link { border: 0; background: none; padding: 0; color: var(--accent); font-weight: 500; }
+
+.banner { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; font-size: 13px; padding: 10px 14px; border-radius: 8px; background: var(--accent-soft); }
+.banner b { font-weight: 600; }
+.err { color: var(--hr); font-size: 14px; }
+
+.tiles { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+@media (max-width: 640px) { .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.tile { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 14px; display: grid; gap: 2px; }
+.tile .k { font-size: 12px; color: var(--muted); }
+.tile .v { font-size: 26px; font-weight: 700; }
+.tile .v small { font-family: var(--f-body); font-size: 13px; font-weight: 500; color: var(--muted); margin-left: 3px; }
+
+.chips { display: flex; gap: 8px; flex-wrap: wrap; }
+.chip { font-weight: 500; font-size: 13px; padding: 7px 12px; border-radius: 999px; }
+.chip[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+
+.statrow { display: flex; flex-wrap: wrap; gap: 8px 24px; }
+.stat { display: grid; }
+.stat .k { font-size: 12px; color: var(--muted); }
+.stat .v { font-size: 20px; font-weight: 700; }
+
+.charts { display: grid; gap: 14px; }
+.chart-box { display: grid; gap: 6px; min-width: 0; }
+.chart-box .t { font-size: 13px; font-weight: 600; display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+.chart-box .t span { font-weight: 400; color: var(--muted); }
+.canvas-wrap { position: relative; height: 200px; }
+.quality { font-size: 13px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 12px; display: grid; gap: 4px; }
+.quality b { color: var(--ink); font-weight: 600; }
+
+.tablewrap { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 14px; }
+th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+th { font-size: 12px; font-weight: 600; color: var(--muted); }
+td.r, th.r { text-align: right; }
+.splits td.fast { color: var(--ok); font-weight: 600; }
+.splits td.slow { color: var(--muted); }
+
+.insight { font-size: 15px; max-width: 64ch; }
+.insight strong { font-weight: 700; }
+
+/* goal form */
+.segs { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+@media (max-width: 640px) { .segs { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+label.seg { border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; cursor: pointer; display: grid; gap: 2px; background: var(--surface); }
+label.seg input { position: absolute; opacity: 0; pointer-events: none; }
+label.seg b { font-size: 15px; }
+label.seg span { font-size: 12px; color: var(--muted); line-height: 1.4; }
+label.seg:has(input:checked) { border-color: var(--accent); background: var(--accent-soft); box-shadow: inset 0 0 0 1px var(--accent); }
+.fields { display: flex; gap: 14px; flex-wrap: wrap; align-items: flex-end; }
+.field { display: grid; gap: 4px; }
+.field label { font-size: 12px; color: var(--muted); font-weight: 500; }
+input[type=text], input[type=number], select, textarea { font: inherit; font-size: 15px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); color: var(--ink); }
+input.w-s { width: 92px; } input.w-m { width: 140px; }
+textarea { width: 100%; min-height: 96px; font-family: var(--f-mono); font-size: 13px; }
+
+.result { display: grid; gap: 16px; }
+.target { display: flex; gap: 20px 32px; flex-wrap: wrap; align-items: flex-end; }
+.target .big { font-family: var(--f-display); font-weight: 800; font-size: 56px; line-height: 1; letter-spacing: -0.03em; color: var(--accent); }
+.target .big small { font-size: 16px; font-family: var(--f-body); font-weight: 600; color: var(--muted); margin-left: 4px; letter-spacing: 0; }
+.guide { max-width: 60ch; }
+.role { display: inline-block; font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 999px; background: var(--accent-soft); color: var(--ink); }
+.role.spurt { background: var(--hr); color: var(--bg); }
+.role.calm { background: var(--grid); }
+td.song { white-space: normal; min-width: 180px; }
+td.song .a { color: var(--muted); font-size: 13px; }
+.beatnote { font-family: var(--f-mono); font-size: 12px; color: var(--muted); }
+.actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+.gap { font-size: 14px; color: var(--warn); }
+
+.libtools { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 14px; }
+@media (max-width: 700px) { .libtools { grid-template-columns: minmax(0, 1fr); } }
+.libtools .card { display: grid; gap: 10px; align-content: start; }
+.lib-scroll { max-height: 360px; overflow: auto; }
+footer { font-size: 13px; color: var(--muted); display: grid; gap: 6px; max-width: 70ch; }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header class="top">
+    <div class="ticks" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+    <div class="brand"><h1>케이던스 믹스</h1><span class="tag">STEPS / MIN × BEATS / MIN</span></div>
+    <p class="lede">러닝 기록을 올리면 페이스·케이던스·심박을 정리하고, 오늘 목표에 맞는 박자의 노래로 플레이리스트를 짜 줘요. 발걸음이 박자를 따라가는 성질을 이용해서, 빨리 달리고 싶은 날엔 끌어주고 천천히 달려야 하는 날엔 붙잡아 줘요.</p>
+  </header>
+
+  <!-- 1. data in -->
+  <section aria-labelledby="h-in">
+    <div class="sec-head"><span class="eyebrow">01 · 데이터 올리기</span><h2 id="h-in">러닝 기록 파일</h2></div>
+    <div class="drop" id="drop">
+      <p><b>헬스 커넥트 내보내기 파일</b>(<span class="mono">health_connect_export.db</span> 또는 .zip)을 올리세요. 나이키런과 삼성 헬스 기록이 이 파일 하나에 같이 들어 있어요. GPX·TCX 파일도 읽어요.</p>
+      <div class="row">
+        <button type="button" class="primary" id="pick">파일 선택</button>
+        <input id="file" type="file" accept=".db,.zip,.gpx,.tcx" multiple hidden>
+        <span class="muted small">또는 여기로 끌어다 놓기</span>
+      </div>
+      <p class="privacy">파일은 이 브라우저 안에서만 읽어요. 어디에도 업로드되지 않아요.</p>
+      <p class="err" id="loadErr" hidden></p>
+    </div>
+    <div class="banner" id="demoBanner"><b>지금 보이는 건 예시 데이터예요.</b><span>내 파일을 올리면 내 기록으로 바뀌어요.</span></div>
+  </section>
+
+  <!-- 2. analysis -->
+  <section aria-labelledby="h-an">
+    <div class="sec-head"><span class="eyebrow">02 · 분석</span><h2 id="h-an">내 러닝 요약</h2></div>
+    <div class="tiles" id="tiles"></div>
+    <div class="chips" id="chips" role="group" aria-label="러닝 선택"></div>
+    <div class="card" id="sessionCard"></div>
+  </section>
+
+  <!-- 3. my rhythm -->
+  <section aria-labelledby="h-fit">
+    <div class="sec-head"><span class="eyebrow">03 · 내 리듬</span><h2 id="h-fit">속도에 따라 케이던스가 얼마나 바뀌나</h2></div>
+    <div class="card" style="display:grid;gap:14px">
+      <p class="insight" id="fitText"></p>
+      <div class="chart-box"><div class="t">속도별 케이던스 <span>점 하나 = 30초 구간</span></div><div class="canvas-wrap" style="height:240px"><canvas id="cFit" aria-label="속도별 케이던스 산점도"></canvas></div></div>
+    </div>
+  </section>
+
+  <!-- 4. goal -->
+  <section aria-labelledby="h-goal">
+    <div class="sec-head"><span class="eyebrow">04 · 오늘의 목표</span><h2 id="h-goal">목표에 맞는 플레이리스트</h2></div>
+    <form class="card" id="goalForm" style="display:grid;gap:16px">
+      <div class="segs" role="radiogroup" aria-label="러닝 종류">
+        <label class="seg"><input type="radio" name="mode" value="pr" id="m-pr" checked><b>기록 단축</b><span>목표 박자로 끌고, 마지막엔 스퍼트</span></label>
+        <label class="seg"><input type="radio" name="mode" value="easy" id="m-easy"><b>이지런</b><span>대화되는 편한 페이스 유지</span></label>
+        <label class="seg"><input type="radio" name="mode" value="recovery" id="m-rec"><b>회복런</b><span>빨라지지 않게 붙잡기</span></label>
+        <label class="seg"><input type="radio" name="mode" value="interval" id="m-int"><b>인터벌</b><span>곡마다 질주 ↔ 회복</span></label>
+      </div>
+      <div class="fields">
+        <div class="field"><label for="dist">거리 (km)</label><input id="dist" class="w-s" type="number" min="0.5" max="42.2" step="0.5" value="3"></div>
+        <div class="field"><label for="pace">목표 페이스 (분'초"/km)</label><input id="pace" class="w-s mono" type="text" inputmode="numeric" value="6'00&quot;" placeholder="5'30&quot;"></div>
+        <div class="field"><label for="age">나이 (심박 기준)</label><input id="age" class="w-s" type="number" min="12" max="90" value="24"></div>
+        <button type="submit" class="primary">플레이리스트 만들기</button>
+      </div>
+      <p class="small muted" id="paceHint"></p>
+    </form>
+    <div class="card result" id="result" aria-live="polite"></div>
+  </section>
+
+  <!-- 5. library -->
+  <section aria-labelledby="h-lib">
+    <div class="sec-head"><span class="eyebrow">05 · 노래 목록</span><h2 id="h-lib">추천에 쓰는 노래</h2></div>
+    <p class="small muted" style="max-width:68ch">기본 목록의 BPM은 참고용 근사값이에요. 틀린 값은 지우고 다시 넣어 주세요. 내 플레이리스트 곡을 추가할수록 추천이 좋아져요. 추가한 곡은 이 브라우저에 저장돼요.</p>
+    <div class="libtools">
+      <form class="card" id="addForm">
+        <h3 style="font-size:15px">한 곡 추가</h3>
+        <div class="fields">
+          <div class="field" style="flex:1 1 160px"><label for="aTitle">제목</label><input id="aTitle" type="text" required></div>
+          <div class="field" style="flex:1 1 140px"><label for="aArtist">가수</label><input id="aArtist" type="text"></div>
+        </div>
+        <div class="fields">
+          <div class="field"><label for="aBpm">BPM</label><input id="aBpm" class="w-s" type="number" min="40" max="220" required></div>
+          <div class="field"><label for="aEnergy">분위기</label><select id="aEnergy"><option value="low">잔잔</option><option value="mid" selected>보통</option><option value="high">신남</option></select></div>
+          <div class="field"><label for="aDur">길이</label><input id="aDur" class="w-s mono" type="text" placeholder="3:30"></div>
+          <button type="submit">추가</button>
+        </div>
+      </form>
+      <form class="card" id="bulkForm">
+        <h3 style="font-size:15px">여러 곡 붙여넣기</h3>
+        <label for="bulk" class="small muted">한 줄에 한 곡: 제목 / 가수 / BPM / 분위기(잔잔·보통·신남) / 길이</label>
+        <textarea id="bulk" placeholder="Hype Boy / NewJeans / 100 / 보통 / 2:59"></textarea>
+        <div class="actions"><button type="submit">목록에 넣기</button><span class="small muted" id="bulkMsg"></span></div>
+      </form>
+    </div>
+    <div class="card" style="display:grid;gap:10px">
+      <div class="actions" style="justify-content:space-between"><span class="small muted" id="libCount"></span><button type="button" id="resetLib" class="link">기본 목록으로 되돌리기</button></div>
+      <div class="lib-scroll tablewrap"><table id="libTable"><thead><tr><th>제목</th><th>가수</th><th class="r">BPM</th><th>분위기</th><th class="r">길이</th><th></th></tr></thead><tbody></tbody></table></div>
+    </div>
+  </section>
+
+  <footer>
+    <p>케이던스 = 1분 동안의 걸음 수(spm). 노래 BPM이 케이던스와 같거나, 절반 BPM의 곡을 두 걸음에 한 박으로 탈 때 발이 박자에 맞아요. 그래서 85 BPM 곡은 170 spm으로 계산해요.</p>
+    <p>심박 기준은 220 − 나이로 잡은 추정 최대심박이라 개인차가 커요. 몸 상태가 이상하면 플레이리스트보다 몸을 먼저 따르세요.</p>
+  </footer>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sql.js@1.10.3/dist/sql-asm.js"></script>
+<script>
+/* ---------- core: parsing, analysis, playlist (pure functions) ---------- */
+const CM = {};
+
+CM.median = a => { if (!a.length) return null; const s = [...a].sort((x, y) => x - y); const m = s.length >> 1; return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2; };
+CM.mean = a => a.length ? a.reduce((x, y) => x + y, 0) / a.length : null;
+CM.paceFromSpeed = v => v > 0 ? 1000 / v : null;           // sec per km
+CM.speedFromPace = p => p > 0 ? 1000 / p : null;
+CM.fmtPace = s => { if (!s || !isFinite(s)) return '–'; s = Math.round(s); return `${Math.floor(s / 60)}'${String(s % 60).padStart(2, '0')}"`; };
+CM.fmtDur = s => { s = Math.round(s); const h = Math.floor(s / 3600), m = Math.floor(s % 3600 / 60), x = s % 60; return h ? `${h}:${String(m).padStart(2, '0')}:${String(x).padStart(2, '0')}` : `${m}:${String(x).padStart(2, '0')}`; };
+CM.parseMMSS = str => { const m = String(str).trim().match(/^(\d{1,2})[:'’](\d{1,2})"?$/); return m ? (+m[1]) * 60 + (+m[2]) : null; };
+
+/* Health Connect export (.db) */
+CM.parseHealthConnect = (SQL, bytes) => {
+  const db = new SQL.Database(bytes);
+  const q = (sql) => { const st = db.prepare(sql); const out = []; while (st.step()) out.push(st.get()); st.free(); return out; };
+  const tables = q("select name from sqlite_master where type='table'").map(r => r[0]);
+  const has = t => tables.includes(t);
+  const cols = t => q(`pragma table_info("${t}")`).map(r => r[1]);
+  const apps = {};
+  if (has('application_info_table')) q('select row_id, app_name, package_name from application_info_table').forEach(r => { apps[r[0]] = r[1] || r[2]; });
+  let sessions = [];
+  if (has('exercise_session_record_table')) {
+    sessions = q('select start_time, end_time, title, app_info_id from exercise_session_record_table order by start_time')
+      .map(r => ({ start: r[0], end: r[1], title: r[2] || '운동', source: apps[r[3]] || '' }));
+  }
+  const series = { speed: [], cadence: [], hr: [] };
+  for (const t of tables) {
+    const c = cols(t);
+    if (!(c.includes('parent_key') && c.includes('epoch_millis'))) continue;
+    const vc = c.find(x => x !== 'parent_key' && x !== 'epoch_millis');
+    const n = t.toLowerCase();
+    if (n.includes('variability')) continue;
+    const k = n.includes('heart') ? 'hr' : n.includes('cadence') ? 'cadence' : n.includes('speed') ? 'speed' : null;
+    if (!k || !vc) continue;
+    q(`select epoch_millis, "${vc}" from "${t}"`).forEach(r => { if (r[1] != null) series[k].push([r[0], +r[1]]); });
+  }
+  Object.values(series).forEach(a => a.sort((x, y) => x[0] - y[0]));
+  const dist = has('distance_record_table') ? q('select start_time, end_time, distance from distance_record_table') : [];
+  db.close();
+  const slice = (arr, a, b) => arr.filter(p => p[0] >= a && p[0] <= b);
+  return sessions.map(s => {
+    const d = dist.filter(r => r[0] < s.end && r[1] > s.start).reduce((x, r) => x + r[2], 0);
+    return { ...s, distance: d || null, speed: slice(series.speed, s.start, s.end), cadence: slice(series.cadence, s.start, s.end), hr: slice(series.hr, s.start, s.end) };
+  });
+};
+
+/* GPX / TCX */
+CM.haversine = (a, b) => { const R = 6371000, r = x => x * Math.PI / 180; const dLat = r(b[0] - a[0]), dLon = r(b[1] - a[1]); const h = Math.sin(dLat / 2) ** 2 + Math.cos(r(a[0])) * Math.cos(r(b[0])) * Math.sin(dLon / 2) ** 2; return 2 * R * Math.asin(Math.sqrt(h)); };
+CM.parseXmlTrack = (text, name) => {
+  const doc = new DOMParser().parseFromString(text, 'application/xml');
+  const pick = (el, local) => { const all = el.getElementsByTagName('*'); for (const e of all) if (e.localName === local) return e; return null; };
+  const isTcx = /\.tcx$/i.test(name) || doc.getElementsByTagName('Trackpoint').length;
+  const pts = [];
+  const nodes = isTcx ? [...doc.getElementsByTagName('*')].filter(e => e.localName === 'Trackpoint') : [...doc.getElementsByTagName('*')].filter(e => e.localName === 'trkpt');
+  for (const el of nodes) {
+    const tEl = pick(el, isTcx ? 'Time' : 'time'); if (!tEl) continue;
+    const t = Date.parse(tEl.textContent);
+    let lat = null, lon = null, dm = null;
+    if (isTcx) { const la = pick(el, 'LatitudeDegrees'), lo = pick(el, 'LongitudeDegrees'), d = pick(el, 'DistanceMeters'); if (la && lo) { lat = +la.textContent; lon = +lo.textContent; } if (d) dm = +d.textContent; }
+    else { lat = +el.getAttribute('lat'); lon = +el.getAttribute('lon'); }
+    const hrEl = isTcx ? pick(el, 'Value') : pick(el, 'hr');
+    const cadEl = pick(el, 'RunCadence') || pick(el, 'Cadence') || pick(el, 'cad');
+    pts.push({ t, lat, lon, dm, hr: hrEl ? +hrEl.textContent : null, cad: cadEl ? +cadEl.textContent : null });
+  }
+  if (pts.length < 2) throw new Error('트랙 포인트를 찾지 못했어요.');
+  let cum = 0; const speed = [];
+  for (let i = 0; i < pts.length; i++) {
+    const p = pts[i];
+    if (p.dm == null) { if (i && p.lat != null && pts[i - 1].lat != null) cum += CM.haversine([pts[i - 1].lat, pts[i - 1].lon], [p.lat, p.lon]); p.dm = cum; }
+  }
+  const W = 10000; // 10s window speed
+  for (let i = 0, j = 0; i < pts.length; i++) { while (pts[i].t - pts[j].t > W) j++; const dt = (pts[i].t - pts[j].t) / 1000; if (dt >= 3) speed.push([pts[i].t, (pts[i].dm - pts[j].dm) / dt]); }
+  const cadRaw = pts.filter(p => p.cad != null);
+  const doubling = CM.median(cadRaw.map(p => p.cad)) < 115 ? 2 : 1; // per-foot -> steps/min
+  return [{ title: name.replace(/\.(gpx|tcx)$/i, ''), source: isTcx ? 'TCX 파일' : 'GPX 파일', start: pts[0].t, end: pts[pts.length - 1].t, distance: pts[pts.length - 1].dm || null,
+    speed, cadence: cadRaw.map(p => [p.t, p.cad * doubling]), hr: pts.filter(p => p.hr).map(p => [p.t, p.hr]) }];
+};
+
+/* Analysis */
+CM.CAD = { errHi: 250, errLo: 30, runLo: 120 };
+CM.windows = (arr, start, sec, fn) => { const b = new Map(); for (const [t, v] of arr) { const k = Math.floor((t - start) / 1000 / sec); if (!b.has(k)) b.set(k, []); b.get(k).push(v); } return [...b.entries()].sort((x, y) => x[0] - y[0]).map(([k, v]) => [(k + 0.5) * sec / 60, fn(v)]); };
+CM.analyze = (s) => {
+  const dur = (s.end - s.start) / 1000;
+  const spValid = s.speed.filter(([, v]) => v >= 0.5 && v <= 7);
+  let err = 0, walk = 0; const cadRun = [];
+  for (const p of s.cadence) { const v = p[1]; if (v > CM.CAD.errHi || v < CM.CAD.errLo) err++; else if (v < CM.CAD.runLo) walk++; else cadRun.push(p); }
+  // integrate speed for splits
+  let dist = 0, splits = [], lastT = s.start, kmStart = s.start, nextKm = 1000;
+  const sp = s.speed.filter(([, v]) => v >= 0 && v <= 7);
+  for (const [t, v] of sp) { const dt = Math.min((t - lastT) / 1000, 15); lastT = t; dist += Math.max(v, 0) * dt; while (dist >= nextKm) { splits.push((t - kmStart) / 1000); kmStart = t; nextKm += 1000; } }
+  const total = s.distance || dist || null;
+  if (s.distance && dist > 0) { const k = s.distance / dist; if (Math.abs(k - 1) > 0.03) { // rescale splits to recorded distance
+      splits = []; let d2 = 0, lt = s.start, ks = s.start, nk = 1000; for (const [t, v] of sp) { const dt = Math.min((t - lt) / 1000, 15); lt = t; d2 += Math.max(v, 0) * dt * k; while (d2 >= nk) { splits.push((t - ks) / 1000); ks = t; nk += 1000; } } } }
+  const paceLine = CM.windows(spValid, s.start, 30, v => CM.paceFromSpeed(CM.mean(v)));
+  const cadLine = CM.windows(cadRun, s.start, 30, CM.median);
+  const hrLine = CM.windows(s.hr, s.start, 30, CM.mean);
+  const hrs = s.hr.map(p => p[1]);
+  return { dur, distance: total, avgPace: total ? dur / (total / 1000) : null,
+    cadence: CM.median(cadRun.map(p => p[1])), hrAvg: hrs.length ? CM.mean(hrs) : null, hrMax: hrs.length ? Math.max(...hrs) : null,
+    cadTotal: s.cadence.length, cadErr: err, cadWalk: walk, speedN: s.speed.length,
+    sampleGap: s.speed.length > 1 ? CM.median(s.speed.slice(1).map((p, i) => (p[0] - s.speed[i][0]) / 1000)) : null,
+    splits, paceLine, cadLine, hrLine };
+};
+
+/* cadence = a + b * speed, from 30s windows */
+CM.fit = (sessions) => {
+  const pts = [];
+  for (const s of sessions) {
+    const spW = new Map(CM.windows(s.speed.filter(([, v]) => v >= 1.5 && v <= 7), s.start, 30, CM.mean).map(([m, v]) => [m, v]));
+    const cadRun = s.cadence.filter(([, v]) => v >= CM.CAD.runLo && v <= CM.CAD.errHi);
+    for (const [m, c] of CM.windows(cadRun, s.start, 30, CM.median)) if (spW.has(m)) pts.push([spW.get(m), c]);
+  }
+  const fallback = { a: 135, b: 10, pts, n: pts.length, own: false };
+  if (pts.length < 12) return fallback;
+  const mx = CM.mean(pts.map(p => p[0])), my = CM.mean(pts.map(p => p[1]));
+  let sxy = 0, sxx = 0; for (const [x, y] of pts) { sxy += (x - mx) * (y - my); sxx += (x - mx) ** 2; }
+  const b = sxx ? sxy / sxx : 0;
+  if (!(b > 1 && b < 40)) return { a: my - 10 * mx, b: 10, pts, n: pts.length, own: true, flat: true };
+  return { a: my - b * mx, b, pts, n: pts.length, own: true };
+};
+CM.cadenceFor = (fit, paceSec) => fit.a + fit.b * CM.speedFromPace(paceSec);
+
+/* Playlist */
+CM.ENERGY = { low: '잔잔', mid: '보통', high: '신남' };
+CM.effBeat = (bpm, target) => [bpm, bpm * 2, bpm / 2].reduce((a, b) => Math.abs(b - target) < Math.abs(a - target) ? b : a);
+CM.buildPlaylist = (lib, opt) => {
+  // opt: {mode, distKm, paceSec, bestPace, typicalPace, fit}
+  const used = new Set();
+  const plan = [];
+  const pick = (role, seconds, target, rule) => {
+    const cands = lib.filter(s => !used.has(s.id)).map(s => ({ s, beat: CM.effBeat(s.bpm, target) }))
+      .map(c => ({ ...c, diff: c.beat - target })).filter(c => rule.ok(c)).sort((x, y) => rule.score(x) - rule.score(y));
+    let got = 0; const out = [];
+    for (const c of cands) { if (out.length && got >= seconds - 30) break; used.add(c.s.id); out.push({ role, target, ...c }); got += c.s.dur; }
+    plan.push(...out);
+    return { got, need: seconds };
+  };
+  const main = opt.distKm * opt.paceSec;
+  const tgt = Math.round(CM.cadenceFor(opt.fit, opt.paceSec));
+  const eBonus = { low: 0, mid: 1, high: 2 };
+  const near = (tol, minE) => ({ ok: c => Math.abs(c.diff) <= tol && eBonus[c.s.energy] >= minE, score: c => Math.abs(c.diff) - eBonus[c.s.energy] * 0.6 });
+  const res = { target: tgt, gaps: [], segments: [] };
+  const seg = (label, r) => { res.segments.push({ label, ...r }); if (r.got < r.need - 60) res.gaps.push(label); };
+  if (opt.mode === 'pr') {
+    const easy = Math.round(CM.cadenceFor(opt.fit, opt.paceSec + 45));
+    seg('워밍업', pick('워밍업', 240, easy, { ok: c => c.diff >= -12 && c.diff <= 3 && c.s.energy !== 'high', score: c => Math.abs(c.diff) }));
+    seg('목표 페이스', pick('목표 페이스', main * 0.8, tgt, near(4, 1)));
+    seg('라스트 스퍼트', pick('라스트 스퍼트', main * 0.2, tgt + 3, { ok: c => c.diff >= -1 && c.diff <= 6 && c.s.energy === 'high', score: c => Math.abs(c.diff) }));
+  } else if (opt.mode === 'easy') {
+    seg('이지런', pick('이지런', main, tgt, { ok: c => Math.abs(c.diff) <= 8 && c.diff <= 4, score: c => Math.abs(c.diff) + (c.s.energy === 'high' ? 2 : 0) }));
+  } else if (opt.mode === 'recovery') {
+    // never above target: songs nudge you down, calm first
+    seg('회복', pick('회복', main, tgt, { ok: c => c.diff <= 2 && c.diff >= -45 && c.s.energy !== 'high', score: c => (c.s.energy === 'low' ? 0 : 6) + Math.abs(c.diff) * 0.4 }));
+    res.capBeat = tgt + 2;
+  } else if (opt.mode === 'interval') {
+    const fastPace = opt.paceSec, fastT = tgt, slowT = Math.round(CM.cadenceFor(opt.fit, opt.paceSec + 90));
+    let left = main * 1.35; let i = 0;
+    while (left > 0 && i < 12) {
+      const fast = i % 2 === 0;
+      const r = pick(fast ? '질주' : '회복 조깅', 1, fast ? fastT : slowT, fast ? { ok: c => Math.abs(c.diff) <= 5 && c.s.energy === 'high', score: c => Math.abs(c.diff) } : { ok: c => c.diff <= 2 && c.s.energy !== 'high', score: c => Math.abs(c.diff) });
+      if (!r.got) { res.gaps.push(fast ? '질주' : '회복 조깅'); break; }
+      left -= r.got; i++;
+    }
+    res.slowTarget = slowT;
+  }
+  res.songs = plan;
+  res.total = plan.reduce((x, p) => x + p.s.dur, 0);
+  res.planned = opt.mode === 'pr' ? main + 240 : opt.mode === 'interval' ? main * 1.35 : main;
+  return res;
+};
+
+/* Example data (clearly marked in UI) */
+CM.demo = () => {
+  let seed = 7; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  const mk = (title, dayOffset, km, basePace, withHr) => {
+    const start = Date.UTC(2026, 9, 20 + dayOffset, 11, 0, 0); const speed = [], cadence = [], hr = [];
+    let d = 0, t = start;
+    while (d < km * 1000) {
+      const prog = d / (km * 1000);
+      const pace = basePace - prog * 12 + (rnd() - 0.5) * 18;
+      const v = 1000 / pace; t += 3000; d += v * 3;
+      speed.push([t, v]);
+      let c = 135 + 10 * v + (rnd() - 0.5) * 6; if (rnd() < 0.03) c = rnd() < 0.5 ? 1500 + rnd() * 900 : 15 + rnd() * 10;
+      cadence.push([t, c]);
+      if (withHr) hr.push([t, 128 + prog * 30 + (rnd() - 0.5) * 6]);
+    }
+    return { title, source: '예시 데이터', start, end: t, distance: km * 1000, speed, cadence, hr };
+  };
+  return [mk('예시 · 이지런 6km', 0, 6, 350, false), mk('예시 · 템포런 5km', 3, 5, 315, true), mk('예시 · 회복런 4km', 5, 4, 395, true)];
+};
+
+/* Starter library: approximate BPMs, editable by the user */
+CM.STARTER = [
+  ['Love Story', 'Taylor Swift', 119, 'mid', 235], ['Shake It Off', 'Taylor Swift', 160, 'high', 219], ['Cruel Summer', 'Taylor Swift', 170, 'high', 178], ['Anti-Hero', 'Taylor Swift', 97, 'low', 200],
+  ['Blinding Lights', 'The Weeknd', 171, 'high', 200], ['Save Your Tears', 'The Weeknd', 118, 'mid', 215], ['Starboy', 'The Weeknd', 186, 'mid', 230],
+  ['As It Was', 'Harry Styles', 174, 'mid', 167], ['Levitating', 'Dua Lipa', 103, 'high', 203], ["Don't Start Now", 'Dua Lipa', 124, 'high', 183],
+  ['Uptown Funk', 'Mark Ronson, Bruno Mars', 115, 'high', 270], ["Can't Stop the Feeling!", 'Justin Timberlake', 113, 'high', 236], ['Happy', 'Pharrell Williams', 160, 'high', 233],
+  ['Shape of You', 'Ed Sheeran', 96, 'mid', 233], ['Bad Guy', 'Billie Eilish', 135, 'mid', 194], ['Stay', 'The Kid LAROI, Justin Bieber', 170, 'high', 141],
+  ['Good 4 U', 'Olivia Rodrigo', 167, 'high', 178], ['Flowers', 'Miley Cyrus', 118, 'mid', 200], ['Espresso', 'Sabrina Carpenter', 104, 'mid', 175],
+  ['APT.', 'ROSÉ, Bruno Mars', 149, 'high', 170], ['Dynamite', 'BTS', 114, 'high', 199], ['Butter', 'BTS', 110, 'mid', 164], ['Seven', 'Jung Kook', 125, 'high', 184],
+  ['Super Shy', 'NewJeans', 150, 'mid', 154], ['Ditto', 'NewJeans', 134, 'low', 186], ['Hype Boy', 'NewJeans', 100, 'mid', 179], ['Next Level', 'aespa', 110, 'high', 221], ['LOVE DIVE', 'IVE', 118, 'mid', 177],
+  ['Eye of the Tiger', 'Survivor', 109, 'high', 245], ["Don't Stop Me Now", 'Queen', 156, 'high', 209], ['Mr. Brightside', 'The Killers', 148, 'high', 222],
+  ["Can't Hold Us", 'Macklemore & Ryan Lewis', 146, 'high', 258], ['Titanium', 'David Guetta, Sia', 126, 'high', 245], ['Wake Me Up', 'Avicii', 124, 'high', 247],
+  ['Lose Yourself', 'Eminem', 171, 'high', 326], ["Till I Collapse", 'Eminem', 171, 'high', 297], ['Stronger', 'Kanye West', 104, 'high', 312], ['Thunderstruck', 'AC/DC', 133, 'high', 292],
+  ['Hey Ya!', 'OutKast', 159, 'high', 235], ['Rolling in the Deep', 'Adele', 105, 'mid', 228], ['Someone Like You', 'Adele', 67, 'low', 285],
+  ['Viva La Vida', 'Coldplay', 138, 'mid', 242], ['Yellow', 'Coldplay', 87, 'low', 269], ['Riptide', 'Vance Joy', 102, 'low', 204], ['Budapest', 'George Ezra', 128, 'low', 200],
+  ['Sunflower', 'Post Malone, Swae Lee', 90, 'low', 158], ['Circles', 'Post Malone', 120, 'low', 215]
+].map(([title, artist, bpm, energy, dur], i) => ({ id: 's' + i, title, artist, bpm, energy, dur }));
+
+
+
+</script>
+<script>
+(() => {
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const LIBKEY = 'cadmix.lib.v1';
+const state = { sessions: [], an: [], demo: true, sel: 0, fit: null, lib: [], charts: {}, lastGoal: null };
+
+/* ---------- library storage ---------- */
+function loadLib() { try { const s = localStorage.getItem(LIBKEY); if (s) { const v = JSON.parse(s); if (Array.isArray(v) && v.length) return v; } } catch (e) {} return CM.STARTER.map(x => ({ ...x })); }
+function saveLib() { try { localStorage.setItem(LIBKEY, JSON.stringify(state.lib)); } catch (e) {} }
+const parseDur = s => { const m = String(s || '').trim().match(/^(\d{1,2}):(\d{2})$/); return m ? +m[1] * 60 + +m[2] : 210; };
+const EN = { '잔잔': 'low', '보통': 'mid', '신남': 'high', low: 'low', mid: 'mid', high: 'high' };
+
+/* ---------- theme-aware colors ---------- */
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+function chartBase() {
+  return { responsive: true, maintainAspectRatio: false, animation: false, interaction: { mode: 'index', intersect: false },
+    plugins: { legend: { display: false }, tooltip: { backgroundColor: css('--surface'), titleColor: css('--ink'), bodyColor: css('--ink'), borderColor: css('--line'), borderWidth: 1, padding: 10, displayColors: false } },
+    scales: { x: { type: 'linear', grid: { color: css('--grid') }, border: { color: css('--line') }, ticks: { color: css('--muted'), callback: v => v + '분' } },
+              y: { grid: { color: css('--grid') }, border: { display: false }, ticks: { color: css('--muted') } } } };
+}
+function drawLine(id, pts, color, opts = {}) {
+  if (state.charts[id]) state.charts[id].destroy();
+  const el = document.getElementById(id); if (!el) return;
+  const base = chartBase();
+  if (opts.reverse) base.scales.y.reverse = true;
+  if (opts.yTick) base.scales.y.ticks.callback = opts.yTick;
+  if (opts.suggest) Object.assign(base.scales.y, opts.suggest);
+  base.plugins.tooltip.callbacks = { title: it => `${it[0].parsed.x.toFixed(1)}분`, label: it => opts.label(it.parsed.y) };
+  state.charts[id] = new Chart(el, { type: 'line', data: { datasets: [{ data: pts.map(([x, y]) => ({ x, y })), borderColor: color, backgroundColor: color, borderWidth: 2, pointRadius: 0, pointHoverRadius: 5, tension: 0.25 }] }, options: base });
+}
+
+/* ---------- data load ---------- */
+let sqlP = null;
+const getSQL = () => sqlP || (sqlP = initSqlJs());
+async function readFiles(files) {
+  const err = $('#loadErr'); err.hidden = true;
+  const out = [];
+  try {
+    for (const f of files) {
+      const name = f.name.toLowerCase();
+      if (name.endsWith('.db')) out.push(...CM.parseHealthConnect(await getSQL(), new Uint8Array(await f.arrayBuffer())));
+      else if (name.endsWith('.zip')) {
+        const zip = await JSZip.loadAsync(await f.arrayBuffer());
+        const entry = Object.values(zip.files).find(z => /\.db$/i.test(z.name));
+        if (!entry) throw new Error(`${f.name} 안에 .db 파일이 없어요.`);
+        out.push(...CM.parseHealthConnect(await getSQL(), await entry.async('uint8array')));
+      } else if (name.endsWith('.gpx') || name.endsWith('.tcx')) out.push(...CM.parseXmlTrack(await f.text(), f.name));
+      else throw new Error(`${f.name}: .db, .zip, .gpx, .tcx 파일만 읽을 수 있어요.`);
+    }
+    const runs = out.filter(s => s.speed.length || s.cadence.length || s.distance);
+    if (!runs.length) throw new Error('운동 기록을 찾지 못했어요. 헬스 커넥트에 나이키런 권한(운동, 속도, 걸음 수)이 켜져 있는지 확인해 주세요.');
+    runs.sort((a, b) => b.start - a.start);
+    setSessions(runs, false);
+  } catch (e) { err.textContent = e.message || String(e); err.hidden = false; }
+}
+function setSessions(list, demo) {
+  state.sessions = list; state.demo = demo; state.sel = 0;
+  state.an = list.map(CM.analyze);
+  state.fit = CM.fit(list);
+  $('#demoBanner').hidden = !demo;
+  renderAll();
+  setDefaults(currentMode());
+  makePlaylist();
+}
+
+/* ---------- baselines ---------- */
+function baselines() {
+  const p = state.an.map(a => a.avgPace).filter(x => x && x > 180 && x < 900);
+  return { typical: p.length ? CM.median(p) : 390, best: p.length ? Math.min(...p) : 360 };
+}
+const r5 = s => Math.round(s / 5) * 5;
+
+/* ---------- render: overview ---------- */
+function renderAll() { renderTiles(); renderChips(); renderSession(); renderFit(); }
+function renderTiles() {
+  const an = state.an, b = baselines();
+  const km = an.reduce((x, a) => x + (a.distance || 0), 0) / 1000;
+  const cads = an.map(a => a.cadence).filter(Boolean);
+  const hasHr = an.some(a => a.hrAvg);
+  $('#tiles').innerHTML = [
+    ['러닝', an.length, '회'], ['총 거리', km.toFixed(1), 'km'], ['평소 페이스', CM.fmtPace(b.typical), '/km'],
+    ['평균 케이던스', cads.length ? Math.round(CM.median(cads)) : '–', 'spm'] ]
+    .map(([k, v, u]) => `<div class="tile"><span class="k">${k}</span><span class="v num">${v}<small>${u}</small></span></div>`).join('')
+    + (hasHr ? '' : `<p class="small muted" style="grid-column:1/-1">심박 데이터가 없어요. 삼성 헬스를 헬스 커넥트에 연결하면 워치 심박이 같이 들어와요.</p>`);
+}
+const fmtDate = t => { const d = new Date(t); return `${d.getMonth() + 1}/${d.getDate()} ${['일','월','화','수','목','금','토'][d.getDay()]}`; };
+function renderChips() {
+  $('#chips').innerHTML = state.sessions.map((s, i) => `<button type="button" class="chip" aria-pressed="${i === state.sel}" data-i="${i}">${fmtDate(s.start)} · ${state.an[i].distance ? (state.an[i].distance / 1000).toFixed(1) + 'km' : esc(s.title)}</button>`).join('');
+}
+$('#chips').addEventListener('click', e => { const b = e.target.closest('[data-i]'); if (!b) return; state.sel = +b.dataset.i; renderChips(); renderSession(); });
+
+function renderSession() {
+  const s = state.sessions[state.sel], a = state.an[state.sel];
+  if (!s) { $('#sessionCard').innerHTML = '<p class="muted">러닝 기록이 없어요.</p>'; return; }
+  const d = new Date(s.start);
+  const splitsAvg = a.splits.length ? CM.median(a.splits) : null;
+  const stats = [['거리', a.distance ? (a.distance / 1000).toFixed(2) + ' km' : '–'], ['시간', CM.fmtDur(a.dur)], ['평균 페이스', CM.fmtPace(a.avgPace) + '/km'],
+    ['케이던스', a.cadence ? Math.round(a.cadence) + ' spm' : '–'], ['평균 심박', a.hrAvg ? Math.round(a.hrAvg) + ' bpm' : '없음']];
+  if (a.hrMax) stats.push(['최대 심박', Math.round(a.hrMax) + ' bpm']);
+  const pct = a.cadTotal ? (a.cadErr / a.cadTotal * 100).toFixed(1) : 0;
+  $('#sessionCard').innerHTML = `
+    <div style="display:grid;gap:16px">
+      <div><h3 style="font-size:17px">${esc(s.title)}</h3><p class="small muted">${d.getFullYear()}.${d.getMonth() + 1}.${d.getDate()} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')} · ${esc(s.source)}</p></div>
+      <div class="statrow">${stats.map(([k, v]) => `<div class="stat"><span class="k">${k}</span><span class="v num">${v}</span></div>`).join('')}</div>
+      <div class="charts">
+        <div class="chart-box"><div class="t">페이스 <span>30초 평균 · 위로 갈수록 빠름</span></div><div class="canvas-wrap"><canvas id="cPace" aria-label="시간별 페이스"></canvas></div></div>
+        <div class="chart-box"><div class="t">케이던스 <span>30초 중앙값 · 센서 오류 제거 후</span></div><div class="canvas-wrap"><canvas id="cCad" aria-label="시간별 케이던스"></canvas></div></div>
+        ${a.hrLine.length ? `<div class="chart-box"><div class="t">심박 <span>30초 평균</span></div><div class="canvas-wrap"><canvas id="cHr" aria-label="시간별 심박"></canvas></div></div>` : ''}
+      </div>
+      ${a.splits.length ? `<div class="tablewrap"><table class="splits"><thead><tr><th>구간</th><th class="r">기록</th><th class="r">페이스</th></tr></thead><tbody>${a.splits.map((t, i) => `<tr><td>${i + 1} km</td><td class="r mono">${CM.fmtDur(t)}</td><td class="r mono ${t < splitsAvg - 8 ? 'fast' : t > splitsAvg * 1.3 ? 'slow' : ''}">${CM.fmtPace(t)}</td></tr>`).join('')}</tbody></table></div>
+      <p class="small muted">구간 기록이 유난히 느린 칸은 신호 대기처럼 멈춘 시간이 섞인 구간일 가능성이 커요.</p>` : ''}
+      <div class="quality">
+        <p><b>데이터 정리</b></p>
+        <p>케이던스 기록 ${a.cadTotal.toLocaleString()}개 중 <b>${a.cadErr}개(${pct}%)</b>는 사람이 낼 수 없는 값(분당 ${CM.CAD.errHi}보 초과 또는 ${CM.CAD.errLo}보 미만)이라 센서 오류로 뺐고, ${a.cadWalk}개는 분당 ${CM.CAD.runLo}보 미만이라 걷기·정지 구간으로 보고 뺐어요.</p>
+        <p>속도는 ${a.speedN.toLocaleString()}개, 약 ${a.sampleGap ? a.sampleGap.toFixed(1) : '–'}초 간격으로 기록돼 있어요.</p>
+      </div>
+    </div>`;
+  drawLine('cPace', a.paceLine.filter(p => p[1] && p[1] < 900), css('--accent'), { reverse: true, yTick: v => CM.fmtPace(v), label: v => '페이스 ' + CM.fmtPace(v) + '/km' });
+  drawLine('cCad', a.cadLine, css('--accent'), { label: v => '케이던스 ' + Math.round(v) + ' spm', suggest: { suggestedMin: 140, suggestedMax: 190 } });
+  if (a.hrLine.length) drawLine('cHr', a.hrLine, css('--hr'), { label: v => '심박 ' + Math.round(v) + ' bpm' });
+}
+
+function renderFit() {
+  const f = state.fit;
+  const at = p => Math.round(CM.cadenceFor(f, p));
+  let txt;
+  if (!f.own) txt = `케이던스와 속도를 같이 볼 수 있는 구간이 아직 적어서(${f.n}개), 일반적인 러너 기준(속도 1m/s 빨라질 때 약 10보 증가)을 쓰고 있어요. 기록이 쌓이면 내 공식으로 바뀌어요.`;
+  else if (f.b < 5) txt = `<strong>속도를 바꿔도 케이던스가 거의 그대로예요.</strong> 1km를 30초 빨리 뛸 때 늘어나는 걸음 수가 분당 ${Math.max(1, Math.round(at(330) - at(360)))}보 정도뿐이라, 속도는 주로 보폭으로 내고 있다는 뜻이에요. 그래서 이 사이트는 박자를 크게 바꾸기보다 ${at(360)} spm 주변에서 미세하게 조절하는 곡을 골라요. 같은 박자를 유지한 채 보폭을 늘리는 연습, 또는 케이던스를 몇 보 올려서 속도를 내는 연습 둘 다 노래로 해볼 수 있어요.`;
+  else txt = `내 기록 ${f.n}개 구간으로 계산하면 페이스 6'00"일 때 약 <strong>${at(360)} spm</strong>, 5'30"일 때 약 <strong>${at(330)} spm</strong>으로 뛰어요. 목표 페이스를 넣으면 이 공식으로 필요한 박자를 계산해요.`;
+  $('#fitText').innerHTML = txt;
+  if (state.charts.cFit) state.charts.cFit.destroy();
+  const base = chartBase();
+  base.interaction = { mode: 'nearest', intersect: true };
+  base.scales.x.ticks.callback = v => CM.fmtPace(1000 / v);
+  base.scales.x.title = { display: true, text: '페이스 (/km)', color: css('--muted') };
+  base.scales.y.title = { display: true, text: '케이던스 (spm)', color: css('--muted') };
+  base.plugins.tooltip.callbacks = { title: () => '', label: it => `${CM.fmtPace(1000 / it.parsed.x)}/km · ${Math.round(it.parsed.y)} spm` };
+  const xs = f.pts.map(p => p[0]); const lo = xs.length ? Math.min(...xs) : 2.4, hi = xs.length ? Math.max(...xs) : 4;
+  const ds = [{ type: 'scatter', data: f.pts.map(([x, y]) => ({ x, y })), backgroundColor: css('--accent') + '66', borderColor: css('--surface'), borderWidth: 1, pointRadius: 4, pointHoverRadius: 6 },
+    { type: 'line', data: [{ x: lo, y: f.a + f.b * lo }, { x: hi, y: f.a + f.b * hi }], borderColor: css('--ink'), borderWidth: 2, borderDash: [5, 4], pointRadius: 0 }];
+  state.charts.cFit = new Chart($('#cFit'), { type: 'scatter', data: { datasets: ds }, options: base });
+}
+
+/* ---------- goal ---------- */
+const currentMode = () => document.querySelector('input[name=mode]:checked').value;
+function setDefaults(mode) {
+  const b = baselines();
+  const pace = { pr: r5(b.best - 10), easy: r5(b.typical + 30), recovery: r5(b.typical + 60), interval: r5(b.best - 20) }[mode];
+  const dist = { pr: 3, easy: 5, recovery: 4, interval: 3 }[mode];
+  $('#pace').value = CM.fmtPace(pace); $('#dist').value = dist;
+  const hint = { pr: `내 가장 빠른 평균 페이스(${CM.fmtPace(b.best)})보다 10초 빠르게 잡았어요.`, easy: `평소 페이스(${CM.fmtPace(b.typical)})보다 30초 느리게 잡았어요.`,
+    recovery: `평소 페이스(${CM.fmtPace(b.typical)})보다 1분 느리게 잡았어요. 회복런은 느려도 괜찮아요.`, interval: `질주 구간 페이스예요. 가장 빠른 평균(${CM.fmtPace(b.best)})보다 20초 빠르게 잡았어요.` }[mode];
+  $('#paceHint').textContent = hint + ' 직접 바꿔도 돼요.' + (state.demo ? ' (예시 데이터 기준)' : '');
+}
+document.querySelectorAll('input[name=mode]').forEach(r => r.addEventListener('change', () => { setDefaults(currentMode()); makePlaylist(); }));
+$('#goalForm').addEventListener('submit', e => { e.preventDefault(); makePlaylist(); });
+
+const MODE_NAME = { pr: '기록 단축', easy: '이지런', recovery: '회복런', interval: '인터벌' };
+function makePlaylist() {
+  const box = $('#result');
+  const mode = currentMode(), distKm = parseFloat($('#dist').value), paceSec = CM.parseMMSS($('#pace').value), age = parseInt($('#age').value, 10) || 24;
+  if (!(distKm > 0) || !paceSec || paceSec < 150 || paceSec > 900) { box.innerHTML = `<p class="err">거리와 목표 페이스를 확인해 주세요. 페이스는 5'30" 또는 5:30처럼 써 주세요.</p>`; return; }
+  const r = CM.buildPlaylist(state.lib, { mode, distKm, paceSec, fit: state.fit });
+  state.lastGoal = { mode, r, distKm, paceSec };
+  const maxHr = 220 - age;
+  const guide = {
+    pr: `${distKm}km를 ${CM.fmtPace(paceSec)}/km로 뛰면 약 ${CM.fmtDur(distKm * paceSec)}이에요. 워밍업 곡으로 몸을 풀고, 목표 박자 곡에서는 발을 박자에 맞추세요. 마지막 곡들은 2~3보 빠른 박자라 자연스럽게 스퍼트가 걸려요.`,
+    easy: `편하게 대화할 수 있는 강도가 기준이에요. 목표 박자보다 빠른 곡은 넣지 않았어요. 심박은 ${Math.round(maxHr * 0.6)}~${Math.round(maxHr * 0.7)} bpm 안쪽이면 적당해요.`,
+    recovery: `목표 박자(${r.target} spm)보다 빠른 곡과 신나는 곡은 전부 뺐어요. 박자가 낮은 곡이 나오면 그만큼 천천히 가도 괜찮아요. 심박이 ${Math.round(maxHr * 0.65)} bpm을 넘으면 걷거나 더 늦추세요.`,
+    interval: `신나는 곡이 나오면 질주(${r.target} spm), 다음 곡이 나오면 회복 조깅(${r.slowTarget} spm)이에요. 곡이 바뀔 때마다 전환하면 돼서 시계를 볼 필요가 없어요.`
+  }[mode];
+  const roleCls = x => x === '라스트 스퍼트' || x === '질주' ? 'spurt' : x === '회복' || x === '회복 조깅' || x === '워밍업' ? 'calm' : '';
+  const rows = r.songs.map((p, i) => {
+    const mult = p.beat === p.s.bpm ? '' : p.beat > p.s.bpm ? ' × 2' : ' ÷ 2';
+    const q = encodeURIComponent(`${p.s.title} ${p.s.artist}`);
+    return `<tr><td class="mono">${i + 1}</td><td><span class="role ${roleCls(p.role)}">${p.role}</span></td>
+      <td class="song"><a href="https://music.youtube.com/search?q=${q}" target="_blank" rel="noopener">${esc(p.s.title)}</a><div class="a">${esc(p.s.artist)}</div></td>
+      <td class="r mono">${p.s.bpm}${mult}<div class="beatnote">= ${Math.round(p.beat)} spm</div></td><td class="r mono">${CM.fmtDur(p.s.dur)}</td></tr>`;
+  }).join('');
+  const short = r.total < r.planned - 60;
+  box.innerHTML = `
+    <div class="target">
+      <div><div class="small muted">${MODE_NAME[mode]} · 목표 케이던스</div><div class="big">${r.target}<small>spm</small></div></div>
+      <div class="statrow"><div class="stat"><span class="k">목표 페이스</span><span class="v num">${CM.fmtPace(paceSec)}/km</span></div>
+      <div class="stat"><span class="k">예상 시간</span><span class="v num">${CM.fmtDur(r.planned)}</span></div>
+      <div class="stat"><span class="k">플레이리스트</span><span class="v num">${r.songs.length}곡 · ${CM.fmtDur(r.total)}</span></div></div>
+    </div>
+    <p class="guide">${guide}</p>
+    ${r.songs.length ? `<div class="tablewrap"><table><thead><tr><th>#</th><th>구간</th><th>곡</th><th class="r">BPM</th><th class="r">길이</th></tr></thead><tbody>${rows}</tbody></table></div>` : ''}
+    ${short || r.gaps.length ? `<p class="gap">${r.gaps.length ? `'${[...new Set(r.gaps)].join("', '")}' 구간에 맞는 곡이 부족해서 ` : ''}${short ? `플레이리스트가 예상 시간보다 ${CM.fmtDur(r.planned - r.total)} 짧아요. ` : ''}${r.target - 4}~${r.target + 4} BPM(또는 그 절반 BPM)의 곡을 노래 목록에 추가해 주세요.</p>` : ''}
+    <div class="actions">${r.songs.length ? `<button type="button" id="copyBtn">곡 목록 복사</button>` : ''}<span class="small muted" id="copyMsg">곡 제목을 누르면 유튜브 뮤직 검색으로 열려요.</span></div>`;
+  const cb = $('#copyBtn');
+  if (cb) cb.addEventListener('click', () => {
+    const text = `[${MODE_NAME[mode]}] ${distKm}km · ${CM.fmtPace(paceSec)}/km · ${r.target} spm\n` + r.songs.map((p, i) => `${i + 1}. ${p.s.title} - ${p.s.artist} (${p.s.bpm} BPM, ${p.role})`).join('\n');
+    navigator.clipboard.writeText(text).then(() => { $('#copyMsg').textContent = '복사했어요.'; }, () => { $('#copyMsg').textContent = '복사가 막혀 있어요. 표를 직접 선택해서 복사해 주세요.'; });
+  });
+}
+
+/* ---------- library UI ---------- */
+function renderLib() {
+  const tb = $('#libTable tbody');
+  tb.innerHTML = [...state.lib].sort((a, b) => a.bpm - b.bpm).map(s => `<tr><td style="white-space:normal">${esc(s.title)}</td><td style="white-space:normal" class="muted">${esc(s.artist)}</td><td class="r mono">${s.bpm}</td><td>${CM.ENERGY[s.energy]}</td><td class="r mono">${CM.fmtDur(s.dur)}</td><td class="r"><button type="button" class="link" data-del="${esc(s.id)}" aria-label="${esc(s.title)} 삭제">삭제</button></td></tr>`).join('');
+  $('#libCount').textContent = `${state.lib.length}곡`;
+}
+$('#libTable').addEventListener('click', e => { const b = e.target.closest('[data-del]'); if (!b) return; state.lib = state.lib.filter(s => s.id !== b.dataset.del); saveLib(); renderLib(); makePlaylist(); });
+const newId = () => 'u' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+$('#addForm').addEventListener('submit', e => {
+  e.preventDefault();
+  const bpm = parseFloat($('#aBpm').value); if (!(bpm >= 40 && bpm <= 220)) return;
+  state.lib.push({ id: newId(), title: $('#aTitle').value.trim(), artist: $('#aArtist').value.trim(), bpm: Math.round(bpm), energy: $('#aEnergy').value, dur: parseDur($('#aDur').value) });
+  saveLib(); renderLib(); makePlaylist(); e.target.reset(); $('#aEnergy').value = 'mid';
+});
+$('#bulkForm').addEventListener('submit', e => {
+  e.preventDefault();
+  let ok = 0, bad = 0;
+  $('#bulk').value.split('\n').map(l => l.trim()).filter(Boolean).forEach(l => {
+    const p = l.split(/\s*[\/|\t,]\s*/);
+    const bpm = parseFloat(p[2]);
+    if (!p[0] || !(bpm >= 40 && bpm <= 220)) { bad++; return; }
+    state.lib.push({ id: newId(), title: p[0], artist: p[1] || '', bpm: Math.round(bpm), energy: EN[(p[3] || '').trim()] || 'mid', dur: parseDur(p[4]) }); ok++;
+  });
+  saveLib(); renderLib(); makePlaylist();
+  $('#bulkMsg').textContent = `${ok}곡 추가${bad ? `, ${bad}줄은 형식이 맞지 않아 건너뜀` : ''}`;
+  if (ok && !bad) $('#bulk').value = '';
+});
+let resetArmed = false;
+$('#resetLib').addEventListener('click', () => {
+  if (!resetArmed) { resetArmed = true; $('#resetLib').textContent = '추가한 곡이 지워져요. 한 번 더 누르면 되돌려요'; setTimeout(() => { resetArmed = false; $('#resetLib').textContent = '기본 목록으로 되돌리기'; }, 4000); return; }
+  resetArmed = false; $('#resetLib').textContent = '기본 목록으로 되돌리기';
+  state.lib = CM.STARTER.map(x => ({ ...x })); saveLib(); renderLib(); makePlaylist();
+});
+
+/* ---------- upload wiring ---------- */
+$('#pick').addEventListener('click', () => $('#file').click());
+$('#file').addEventListener('change', e => { if (e.target.files.length) readFiles([...e.target.files]); e.target.value = ''; });
+const drop = $('#drop');
+['dragenter', 'dragover'].forEach(t => drop.addEventListener(t, e => { e.preventDefault(); drop.classList.add('over'); }));
+['dragleave', 'drop'].forEach(t => drop.addEventListener(t, e => { e.preventDefault(); drop.classList.remove('over'); }));
+drop.addEventListener('drop', e => { if (e.dataTransfer.files.length) readFiles([...e.dataTransfer.files]); });
+
+/* ---------- theme changes redraw charts ---------- */
+const redraw = () => { if (state.sessions.length) { renderSession(); renderFit(); } };
+try { matchMedia('(prefers-color-scheme: dark)').addEventListener('change', redraw); } catch (e) {}
+new MutationObserver(redraw).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+
+/* ---------- boot ---------- */
+state.lib = loadLib(); renderLib();
+setSessions(CM.demo(), true);
+})();
+</script>
+</body>
+</html>
